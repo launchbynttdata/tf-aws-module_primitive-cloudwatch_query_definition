@@ -4,7 +4,7 @@ resource_names_map = {
     max_length = 64
   }
   "log_group" = {
-    name       = "loggroup1"
+    name       = "queryloggroup1"
     max_length = 64
   }
   "query_definition" = {
@@ -16,8 +16,8 @@ resource_names_map = {
 logical_product_family  = "launch"
 logical_product_service = "cloudwatch"
 class_env               = "dev"
-instance_env            = 1
-instance_resource       = 1
+instance_env            = 2
+instance_resource       = 2
 
 query_string = <<-EOF
 fields @timestamp, @message
