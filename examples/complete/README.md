@@ -97,12 +97,6 @@ module "query_definition" {
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.10 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.100, < 7.0 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.100, < 7.0 |
-
 ## Modules
 
 | Name | Source | Version |
@@ -124,14 +118,14 @@ module "query_definition" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_class_env"></a> [class\_env](#input\_class\_env) | The class environment for resource naming. | `string` | n/a | yes |
-| <a name="input_instance_env"></a> [instance\_env](#input\_instance\_env) | The instance environment for resource naming. | `string` | n/a | yes |
-| <a name="input_instance_resource"></a> [instance\_resource](#input\_instance\_resource) | The instance resource for resource naming. | `string` | n/a | yes |
-| <a name="input_logical_product_family"></a> [logical\_product\_family](#input\_logical\_product\_family) | The logical product family for resource naming. | `string` | n/a | yes |
-| <a name="input_logical_product_service"></a> [logical\_product\_service](#input\_logical\_product\_service) | The logical product service for resource naming. | `string` | n/a | yes |
-| <a name="input_log_group_names"></a> [log\_group\_names](#input\_log\_group\_names) | Optional log group names for the query definition. Defaults to the example log group when null. | `list(string)` | `null` | no |
-| <a name="input_query_string"></a> [query\_string](#input\_query\_string) | The Logs Insights query string. | `string` | n/a | yes |
-| <a name="input_resource_names_map"></a> [resource\_names\_map](#input\_resource\_names\_map) | Map of resource name configurations for the resource\_name module. | `map(object({ name = string, max\_length = number }))` | n/a | yes |
+| <a name="input_class_env"></a> [class\_env](#input\_class\_env) | Class environment for resource naming. | `string` | n/a | yes |
+| <a name="input_instance_env"></a> [instance\_env](#input\_instance\_env) | Instance environment number for resource naming. | `number` | n/a | yes |
+| <a name="input_instance_resource"></a> [instance\_resource](#input\_instance\_resource) | Instance resource number for resource naming. | `number` | n/a | yes |
+| <a name="input_log_group_names"></a> [log\_group\_names](#input\_log\_group\_names) | Log group names associated with the query definition. Defaults to the example log group when null. | `list(string)` | `null` | no |
+| <a name="input_logical_product_family"></a> [logical\_product\_family](#input\_logical\_product\_family) | Logical product family for resource naming. | `string` | n/a | yes |
+| <a name="input_logical_product_service"></a> [logical\_product\_service](#input\_logical\_product\_service) | Logical product service for resource naming. | `string` | n/a | yes |
+| <a name="input_query_string"></a> [query\_string](#input\_query\_string) | CloudWatch Logs Insights query string. | `string` | n/a | yes |
+| <a name="input_resource_names_map"></a> [resource\_names\_map](#input\_resource\_names\_map) | Map of resource names for the resource naming module. | <pre>map(object({<br/>    name       = string<br/>    max_length = number<br/>  }))</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to supporting resources. | `map(string)` | `{}` | no |
 
 ## Outputs
