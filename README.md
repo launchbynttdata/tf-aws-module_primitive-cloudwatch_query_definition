@@ -69,6 +69,12 @@ Shared configuration and workflow files are largely managed through [launch-terr
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.10 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.100, < 7.0 |
 
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.47.0 |
+
 ## Modules
 
 No modules.
@@ -83,16 +89,16 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_log_group_names"></a> [log\_group\_names](#input\_log\_group\_names) | List of log group names associated with this query definition. | `list(string)` | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the CloudWatch Logs saved query. | `string` | n/a | yes |
 | <a name="input_query_string"></a> [query\_string](#input\_query\_string) | CloudWatch Logs Insights query string to save. | `string` | n/a | yes |
+| <a name="input_log_group_names"></a> [log\_group\_names](#input\_log\_group\_names) | List of log group names associated with this query definition. | `list(string)` | `null` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_id"></a> [id](#output\_id) | The query definition ID. |
-| <a name="output_log_group_names"></a> [log\_group\_names](#output\_log\_group\_names) | Log group names associated with the query definition. |
 | <a name="output_name"></a> [name](#output\_name) | The name of the query definition. |
 | <a name="output_query_string"></a> [query\_string](#output\_query\_string) | The saved query string. |
+| <a name="output_log_group_names"></a> [log\_group\_names](#output\_log\_group\_names) | Log group names associated with the query definition. |
 <!-- END_TF_DOCS -->
