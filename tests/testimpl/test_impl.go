@@ -22,6 +22,8 @@ func getCloudWatchLogsClient(t *testing.T, region string) *cloudwatchlogs.Client
 	return cloudwatchlogs.NewFromConfig(cfg)
 }
 
+const expectedExampleQueryString = "fields @timestamp, @message\n| sort @timestamp desc\n| limit 25"
+
 func findQueryDefinitionByName(t *testing.T, client *cloudwatchlogs.Client, name string) *cwltypes.QueryDefinition {
 	t.Helper()
 	var nextToken *string
@@ -53,10 +55,11 @@ func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 		queryString := terraform.Output(t, opts, "query_string")
 		logGroupName := terraform.Output(t, opts, "log_group_name")
 
-		assert.NotEmpty(t, id, "query definition id should be set")
-		assert.NotEmpty(t, name, "query definition name should be set")
-		assert.Contains(t, queryString, "fields @timestamp", "query string should match example")
-		assert.NotEmpty(t, logGroupName, "log group name should be set")
+		assert.Regexp(t, `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, id, "query definition id should be a UUID")
+		assert.Equal(t, name, terraform.Output(t, opts, "name"), "name output should be stable")
+		assert.Equal(t, expectedExampleQueryString, strings.TrimSpace(queryString), "query string should match example")
+		assert.Equal(t, logGroupName, terraform.Output(t, opts, "log_group_name"), "log group name output should be stable")
+		assert.Regexp(t, `^/aws/example/`, logGroupName, "log group name should use example prefix")
 	})
 
 	t.Run("VerifyQueryDefinitionViaAPI", func(t *testing.T) {
@@ -102,7 +105,7 @@ func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 			EndTime:      aws.Int64(endTime),
 		})
 		require.NoError(t, err, "StartQuery should succeed")
-		require.NotEmpty(t, aws.ToString(startOutput.QueryId), "query id should be returned")
+		assert.Regexp(t, `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, aws.ToString(startOutput.QueryId), "query id should be a UUID")
 
 		var status cwltypes.QueryStatus
 		for i := 0; i < 30; i++ {
@@ -126,8 +129,8 @@ func TestComposableCompleteReadOnly(t *testing.T, ctx types.TestContext) {
 		id := terraform.Output(t, opts, "id")
 		name := terraform.Output(t, opts, "name")
 
-		assert.NotEmpty(t, id, "query definition id should be set")
-		assert.NotEmpty(t, name, "query definition name should be set")
+		assert.Regexp(t, `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, id, "query definition id should be a UUID")
+		assert.Equal(t, name, terraform.Output(t, opts, "name"), "name output should be stable")
 	})
 
 	t.Run("VerifyQueryDefinitionExistsViaAPI", func(t *testing.T) {

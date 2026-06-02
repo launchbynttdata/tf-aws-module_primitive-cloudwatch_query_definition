@@ -48,6 +48,12 @@ variable "query_string" {
   type        = string
 }
 
+variable "log_group_names" {
+  description = "Log group names associated with the query definition. Defaults to the example log group when null."
+  type        = list(string)
+  default     = null
+}
+
 variable "tags" {
   description = "Tags applied to supporting resources."
   type        = map(string)

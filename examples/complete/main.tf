@@ -88,7 +88,7 @@ module "query_definition" {
 
   name            = module.resource_names["query_definition"].minimal_random_suffix
   query_string    = var.query_string
-  log_group_names = [aws_cloudwatch_log_group.example.name]
+  log_group_names = coalesce(var.log_group_names, [aws_cloudwatch_log_group.example.name])
 
   depends_on = [aws_cloudwatch_log_group.example]
 }
