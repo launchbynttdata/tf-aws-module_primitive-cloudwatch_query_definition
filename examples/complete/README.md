@@ -1,4 +1,93 @@
-# complete
+# Complete Example
+
+This example creates a customer-managed KMS key, a CloudWatch log group encrypted with that key, and a saved Logs Insights query definition scoped to that log group.
+
+## Usage
+
+```hcl
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
+module "resource_names" {
+  source  = "terraform.registry.launch.nttdata.com/module_library/resource_name/launch"
+  version = "~> 2.0"
+
+  for_each = var.resource_names_map
+
+  logical_product_family  = var.logical_product_family
+  logical_product_service = var.logical_product_service
+  class_env               = var.class_env
+  instance_env            = var.instance_env
+  instance_resource       = var.instance_resource
+  cloud_resource_type     = each.value.name
+  maximum_length          = each.value.max_length
+
+  region = join("", split("-", data.aws_region.current.region))
+}
+
+data "aws_iam_policy_document" "logs_kms" {
+  statement {
+    sid    = "EnableIAMUserPermissions"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+    actions   = ["kms:*"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowCloudWatchLogs"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["logs.${data.aws_region.current.region}.amazonaws.com"]
+    }
+    actions = [
+      "kms:Encrypt*",
+      "kms:Decrypt*",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:Describe*",
+      "kms:CreateGrant"
+    ]
+    resources = ["*"]
+    condition {
+      test     = "ArnLike"
+      variable = "kms:EncryptionContext:aws:logs:arn"
+      values   = ["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:*"]
+    }
+  }
+}
+
+resource "aws_kms_key" "logs" {
+  description             = "KMS key for CloudWatch Logs encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+  policy                  = data.aws_iam_policy_document.logs_kms.json
+
+  tags = merge(var.tags, { Name = module.resource_names["kms_key"].standard })
+}
+
+resource "aws_cloudwatch_log_group" "example" {
+  name              = "/aws/example/${module.resource_names["log_group"].standard}"
+  retention_in_days = 1
+  kms_key_id        = aws_kms_key.logs.arn
+
+  tags = var.tags
+}
+
+module "query_definition" {
+  source = "../.."
+
+  name            = module.resource_names["query_definition"].minimal_random_suffix
+  query_string    = var.query_string
+  log_group_names = coalesce(var.log_group_names, [aws_cloudwatch_log_group.example.name])
+
+  depends_on = [aws_cloudwatch_log_group.example]
+}
+```
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -7,6 +96,12 @@
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.10 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.100, < 7.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.100, < 7.0 |
 
 ## Modules
 
@@ -29,14 +124,14 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_class_env"></a> [class\_env](#input\_class\_env) | Class environment for resource naming. | `string` | n/a | yes |
-| <a name="input_instance_env"></a> [instance\_env](#input\_instance\_env) | Instance environment number for resource naming. | `number` | n/a | yes |
-| <a name="input_instance_resource"></a> [instance\_resource](#input\_instance\_resource) | Instance resource number for resource naming. | `number` | n/a | yes |
-| <a name="input_log_group_names"></a> [log\_group\_names](#input\_log\_group\_names) | Log group names associated with the query definition. Defaults to the example log group when null. | `list(string)` | `null` | no |
-| <a name="input_logical_product_family"></a> [logical\_product\_family](#input\_logical\_product\_family) | Logical product family for resource naming. | `string` | n/a | yes |
-| <a name="input_logical_product_service"></a> [logical\_product\_service](#input\_logical\_product\_service) | Logical product service for resource naming. | `string` | n/a | yes |
-| <a name="input_query_string"></a> [query\_string](#input\_query\_string) | CloudWatch Logs Insights query string. | `string` | n/a | yes |
-| <a name="input_resource_names_map"></a> [resource\_names\_map](#input\_resource\_names\_map) | Map of resource names for the resource naming module. | <pre>map(object({<br/>    name       = string<br/>    max_length = number<br/>  }))</pre> | n/a | yes |
+| <a name="input_class_env"></a> [class\_env](#input\_class\_env) | The class environment for resource naming. | `string` | n/a | yes |
+| <a name="input_instance_env"></a> [instance\_env](#input\_instance\_env) | The instance environment for resource naming. | `string` | n/a | yes |
+| <a name="input_instance_resource"></a> [instance\_resource](#input\_instance\_resource) | The instance resource for resource naming. | `string` | n/a | yes |
+| <a name="input_logical_product_family"></a> [logical\_product\_family](#input\_logical\_product\_family) | The logical product family for resource naming. | `string` | n/a | yes |
+| <a name="input_logical_product_service"></a> [logical\_product\_service](#input\_logical\_product\_service) | The logical product service for resource naming. | `string` | n/a | yes |
+| <a name="input_log_group_names"></a> [log\_group\_names](#input\_log\_group\_names) | Optional log group names for the query definition. Defaults to the example log group when null. | `list(string)` | `null` | no |
+| <a name="input_query_string"></a> [query\_string](#input\_query\_string) | The Logs Insights query string. | `string` | n/a | yes |
+| <a name="input_resource_names_map"></a> [resource\_names\_map](#input\_resource\_names\_map) | Map of resource name configurations for the resource\_name module. | `map(object({ name = string, max\_length = number }))` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to supporting resources. | `map(string)` | `{}` | no |
 
 ## Outputs
