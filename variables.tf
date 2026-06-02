@@ -10,25 +10,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-variable "length" {
-  description = "Length of the random string to generate."
-  type        = number
-  default     = 24
+# -----------------------------------------------------------------------------
+# Required
+# -----------------------------------------------------------------------------
+
+variable "name" {
+  description = "Name of the CloudWatch Logs saved query."
+  type        = string
 
   validation {
-    condition     = var.length > 0 && var.length < 100
-    error_message = "Length must be a positive integer less than 100."
+    condition     = length(var.name) >= 1 && length(var.name) <= 255
+    error_message = "Query definition name must be between 1 and 255 characters."
   }
 }
 
-variable "number" {
-  description = "Whether the random string should include numbers. Defaults to true."
-  type        = bool
-  default     = true
+variable "query_string" {
+  description = "CloudWatch Logs Insights query string to save."
+  type        = string
+
+  validation {
+    condition     = length(var.query_string) >= 1
+    error_message = "Query string must not be empty."
+  }
 }
 
-variable "special" {
-  description = "Whether the random string should include special characters. Defaults to false."
-  type        = bool
-  default     = false
+# -----------------------------------------------------------------------------
+# Optional
+# -----------------------------------------------------------------------------
+
+variable "log_group_names" {
+  description = "List of log group names associated with this query definition."
+  type        = list(string)
+  default     = null
 }

@@ -15,18 +15,17 @@ package test
 import (
 	"testing"
 
-	"github.com/launchbynttdata/launch-terraform-template/tests/testimpl"
 	"github.com/launchbynttdata/lcaf-component-terratest/lib"
 	"github.com/launchbynttdata/lcaf-component-terratest/types"
+	"github.com/launchbynttdata/tf-aws-module_primitive-cloudwatch_query_definition/tests/testimpl"
 )
 
 const (
-	testConfigsExamplesFolderDefault = "../../examples"
+	testConfigsExamplesFolderDefault = "../../examples/complete"
 	infraTFVarFileNameDefault        = "test.tfvars"
 )
 
-func TestTemplateModule(t *testing.T) {
-
+func TestCloudWatchQueryDefinition(t *testing.T) {
 	ctx := types.CreateTestContextBuilder().
 		SetTestConfig(&testimpl.ThisTFModuleConfig{}).
 		SetTestConfigFolderName(testConfigsExamplesFolderDefault).
