@@ -10,8 +10,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-resource "random_string" "string" {
-  length  = var.length
-  numeric = var.number
-  special = var.special
+resource "aws_cloudwatch_query_definition" "query_definition" {
+  name            = var.name
+  query_string    = var.query_string
+  log_group_names = var.log_group_names
 }
