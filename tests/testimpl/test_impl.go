@@ -92,9 +92,9 @@ func waitForQueryDefinition(t *testing.T, client *cloudwatchlogs.Client, name st
 
 func assertQueryDefinitionConfig(t *testing.T, def *cwltypes.QueryDefinition, opts *terraform.Options, queryName string) {
 	t.Helper()
-	expectedID := terraform.Output(t, opts, "id")
-	expectedQuery := terraform.Output(t, opts, "query_string")
-	expectedLogGroup := terraform.Output(t, opts, "log_group_name")
+	expectedID := terraform.OutputContext(t, context.Background(), opts, "id")
+	expectedQuery := terraform.OutputContext(t, context.Background(), opts, "query_string")
+	expectedLogGroup := terraform.OutputContext(t, context.Background(), opts, "log_group_name")
 
 	require.NotNil(t, def, "query definition should exist")
 	assert.Equal(t, expectedID, aws.ToString(def.QueryDefinitionId), "query definition id should match")
@@ -106,22 +106,22 @@ func assertQueryDefinitionConfig(t *testing.T, def *cwltypes.QueryDefinition, op
 func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 	t.Run("VerifyTerraformOutputs", func(t *testing.T) {
 		opts := ctx.TerratestTerraformOptions()
-		id := terraform.Output(t, opts, "id")
-		name := terraform.Output(t, opts, "name")
-		queryString := terraform.Output(t, opts, "query_string")
-		logGroupName := terraform.Output(t, opts, "log_group_name")
+		id := terraform.OutputContext(t, context.Background(), opts, "id")
+		name := terraform.OutputContext(t, context.Background(), opts, "name")
+		queryString := terraform.OutputContext(t, context.Background(), opts, "query_string")
+		logGroupName := terraform.OutputContext(t, context.Background(), opts, "log_group_name")
 
 		assert.Regexp(t, `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, id, "query definition id should be a UUID")
-		assert.Equal(t, name, terraform.Output(t, opts, "name"), "name output should be stable")
+		assert.Equal(t, name, terraform.OutputContext(t, context.Background(), opts, "name"), "name output should be stable")
 		assert.Equal(t, expectedExampleQueryString, strings.TrimSpace(queryString), "query string should match example")
 		assert.Regexp(t, `^/aws/example/`, logGroupName, "log group name should use example prefix")
 	})
 
 	t.Run("VerifyLogGroupKMSEncryption", func(t *testing.T) {
 		opts := ctx.TerratestTerraformOptions()
-		logGroupName := terraform.Output(t, opts, "log_group_name")
-		kmsKeyARN := terraform.Output(t, opts, "kms_key_arn")
-		region := terraform.Output(t, opts, "region")
+		logGroupName := terraform.OutputContext(t, context.Background(), opts, "log_group_name")
+		kmsKeyARN := terraform.OutputContext(t, context.Background(), opts, "kms_key_arn")
+		region := terraform.OutputContext(t, context.Background(), opts, "region")
 
 		client := getCloudWatchLogsClient(t, region)
 		assertLogGroupKMSEncryption(t, client, logGroupName, kmsKeyARN)
@@ -129,8 +129,8 @@ func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 
 	t.Run("VerifyQueryDefinitionViaAPI", func(t *testing.T) {
 		opts := ctx.TerratestTerraformOptions()
-		queryName := terraform.Output(t, opts, "name")
-		region := terraform.Output(t, opts, "region")
+		queryName := terraform.OutputContext(t, context.Background(), opts, "name")
+		region := terraform.OutputContext(t, context.Background(), opts, "region")
 
 		client := getCloudWatchLogsClient(t, region)
 		def := waitForQueryDefinition(t, client, queryName)
@@ -139,9 +139,9 @@ func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 
 	t.Run("StartQueryAndWaitForCompletion", func(t *testing.T) {
 		opts := ctx.TerratestTerraformOptions()
-		region := terraform.Output(t, opts, "region")
-		logGroupName := terraform.Output(t, opts, "log_group_name")
-		queryString := terraform.Output(t, opts, "query_string")
+		region := terraform.OutputContext(t, context.Background(), opts, "region")
+		logGroupName := terraform.OutputContext(t, context.Background(), opts, "log_group_name")
+		queryString := terraform.OutputContext(t, context.Background(), opts, "query_string")
 
 		client := getCloudWatchLogsClient(t, region)
 		endTime := time.Now().Unix()
@@ -175,18 +175,18 @@ func TestComposableComplete(t *testing.T, ctx types.TestContext) {
 func TestComposableCompleteReadOnly(t *testing.T, ctx types.TestContext) {
 	t.Run("VerifyTerraformOutputs", func(t *testing.T) {
 		opts := ctx.TerratestTerraformOptions()
-		id := terraform.Output(t, opts, "id")
-		name := terraform.Output(t, opts, "name")
+		id := terraform.OutputContext(t, context.Background(), opts, "id")
+		name := terraform.OutputContext(t, context.Background(), opts, "name")
 
 		assert.Regexp(t, `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, id, "query definition id should be a UUID")
-		assert.Equal(t, name, terraform.Output(t, opts, "name"), "name output should be stable")
+		assert.Equal(t, name, terraform.OutputContext(t, context.Background(), opts, "name"), "name output should be stable")
 	})
 
 	t.Run("VerifyLogGroupKMSEncryption", func(t *testing.T) {
 		opts := ctx.TerratestTerraformOptions()
-		logGroupName := terraform.Output(t, opts, "log_group_name")
-		kmsKeyARN := terraform.Output(t, opts, "kms_key_arn")
-		region := terraform.Output(t, opts, "region")
+		logGroupName := terraform.OutputContext(t, context.Background(), opts, "log_group_name")
+		kmsKeyARN := terraform.OutputContext(t, context.Background(), opts, "kms_key_arn")
+		region := terraform.OutputContext(t, context.Background(), opts, "region")
 
 		client := getCloudWatchLogsClient(t, region)
 		assertLogGroupKMSEncryption(t, client, logGroupName, kmsKeyARN)
@@ -194,8 +194,8 @@ func TestComposableCompleteReadOnly(t *testing.T, ctx types.TestContext) {
 
 	t.Run("VerifyQueryDefinitionViaAPI", func(t *testing.T) {
 		opts := ctx.TerratestTerraformOptions()
-		queryName := terraform.Output(t, opts, "name")
-		region := terraform.Output(t, opts, "region")
+		queryName := terraform.OutputContext(t, context.Background(), opts, "name")
+		region := terraform.OutputContext(t, context.Background(), opts, "region")
 
 		client := getCloudWatchLogsClient(t, region)
 		def := waitForQueryDefinition(t, client, queryName)
